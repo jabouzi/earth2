@@ -1,4 +1,4 @@
-QT += opengl
+QT += core opengl
 TARGET = earth2
 TEMPLATE = app
 SOURCES += main.cpp glwidget.cpp Bmp.cpp

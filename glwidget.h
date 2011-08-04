@@ -46,6 +46,7 @@ private:
     unsigned int loadTextureBmp(const char *filename);
 
     // members
+    QPoint lastPos;
     int windowWidth;
     int windowHeight;
     bool animateFlag;                               // on/off animation
@@ -64,6 +65,12 @@ private:
     unsigned char* frameBuffer;                     // framebuffer to store RGBA color
     int bufferSize;
     void timerEvent(QTimerEvent *event);
+    void mousePressEvent(QMouseEvent *);
+    void mouseMoveEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *);
+    QPointF pixelPosToViewPos(const QPointF&);
+    float rotX, rotY, autoRotX, autoRotY, scaleAll;
+    float angleX, angleY;
 };
 
 #endif // GLWIDGET_H

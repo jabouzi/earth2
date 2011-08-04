@@ -5,9 +5,9 @@
  * Contact Jeff through his website: http://nehe.gamedev.net/
  * Contact Wesley for port-specific comments: wesley@ubuntu.com
  */
-
 #include "glwidget.h"
 #include <QKeyEvent>
+#include <QDebug>
 
 // Constructor
 GLWidget::GLWidget() : windowWidth(0), windowHeight(0), mouseLeftDown(false),
@@ -27,6 +27,10 @@ GLWidget::~GLWidget() {
 
 // Initialize OpenGL
 void GLWidget::initializeGL() {
+    angleX = 0, angleY = 0;
+    rotX = 0, rotY = 0;
+    autoRotX = 0, autoRotY = 0;
+    scaleAll = 1;
     glShadeModel(GL_SMOOTH);                        // shading mathod: GL_SMOOTH or GL_FLAT
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);          // 4-byte pixel alignment
 
@@ -90,10 +94,15 @@ void GLWidget::paintGL() {
     glPushMatrix();
 
     // tramsform camera
-    glTranslatef(0, 0, cameraDistance);
-    glRotatef(cameraAngleX, 1, 0, 0);   // pitch
-    glRotatef(cameraAngleY, 0, 1, 0);   // heading
 
+    glTranslatef(0, 0, cameraDistance);
+/*    glRotatef(cameraAngleX, 1, 0, 0);   // pitch
+    glRotatef(cameraAngleY, 0, 1, 0);   // heading
+*/
+
+    glScalef(scaleAll, scaleAll, scaleAll);
+    glRotatef(rotY, 1,0,0);
+    glRotatef(rotX, 0,1,0);
     glPushMatrix(); // draw sphere
         if(animateFlag) angle += 0.5f;
         //glRotatef(angle, 0.0f, 1.0f, 0.0f);
@@ -191,7 +200,9 @@ GLuint GLWidget::createEarthDL()
     // create a sphere which is a quadric object
     GLUquadricObj *sphere = gluNewQuadric();
     GLuint sphereTex = loadTextureBmp("earth.bmp");
-    GLuint envTex = loadTextureBmp("envmap01_512.bmp");
+    //GLuint envTex = loadTextureBmp("envmap01_512.bmp");
+        //glEnable(GL_TEXTURE_2D);
+    
     gluQuadricDrawStyle(sphere, GLU_FILL); // GLU_FILL, GLU_LINE, GLU_SILHOUETTE, GLU_POINT
     gluQuadricTexture(sphere, GL_TRUE);
     gluQuadricNormals(sphere, GL_SMOOTH);
@@ -207,8 +218,8 @@ GLuint GLWidget::createEarthDL()
         glPushMatrix();
 
         glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-        glRotatef(23.5f, 0.0f, 1.0f, 0.0f);
-        gluSphere(sphere, 1.0, 50, 50); // radius, slice, stack
+        glRotatef(23.5f, 0.0f, 1.0f, 0.0f);        
+        gluSphere(sphere, 1.0, 50, 100); // radius, slice, stack
 
 /*
         glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
@@ -300,34 +311,84 @@ unsigned int GLWidget::loadTextureBmp(const char* fileName)
 ///////////////////////////////////////////////////////////////////////////////
 void GLWidget::rotateCamera(int x, int y)
 {
-    if(mouseLeftDown)
-    {
+    //if(mouseLeftDown)
+    //{
         cameraAngleY += (x - mouseX);
         cameraAngleX += (y - mouseY);
         mouseX = x;
         mouseY = y;
-    }
+    //}
 }
-
-void GLWidget::timerEvent(QTimerEvent *event)
-{
-    updateGL();
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // zoom the camera
 ///////////////////////////////////////////////////////////////////////////////
 void GLWidget::zoomCamera(int delta)
 {
-    if(mouseRightDown)
-    {
+    //if(mouseRightDown)
+    //{
         cameraDistance += (delta - mouseY) * 0.05f;
         mouseY = delta;
+    //}
+}
+
+void GLWidget::mousePressEvent(QMouseEvent *event)
+{
+    lastPos = event->pos();
+    qDebug() << lastPos;
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    int deltX = event->x() - lastPos.x();
+    int deltY = event->y() - lastPos.y();    
+
+    if (event->buttons() & Qt::LeftButton) {
+        rotX += deltX*0.25f/scaleAll;
+        rotY += deltY*0.25f/scaleAll;
+        //rotateCamera(event->x(),event->y());
+
     }
+    else if (event->buttons() & Qt::RightButton) {
+        float addition;
+        addition = ((deltX+deltY) / 200);
+
+        //if (addition < 0 && scaleAll+addition > MIN_SCALE) {
+            //scaleAll += addition;
+        //}
+
+        //if (addition > 0 && scaleAll+addition < MAX_SCALE) {
+            scaleAll += addition;
+        //}
+        //zoomCamera(addition);
+    }
+
+    lastPos = event->pos();
+                // save values for auto rotation
+    //autoRotX = deltX*0.25f;
+    //autoRotY = deltY*0.25f;
+
+    updateGL();
+    //emit rotationsChanged();
+}
+
+void GLWidget::mouseReleaseEvent(QMouseEvent * /* event */)
+{
+    angleX = 180 - rotX;
+    angleY = rotY;
 }
 
 
+QPointF GLWidget::pixelPosToViewPos(const QPointF& p)
+{
+    return QPointF(2.0 * float(p.x()) / width() - 1.0, 1.0 - 2.0 * float(p.y()) / height());
+}
+
+
+void GLWidget::timerEvent(QTimerEvent *event)
+{
+    updateGL();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // change drawing mode
