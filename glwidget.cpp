@@ -244,6 +244,18 @@ GLuint GLWidget::createEarthDL()
 
         glEnable(GL_LIGHT0);   
         glPopMatrix();
+
+        Vector countries_positions[0];
+        QFont myFont( "TypeWriter", 6*scaleAll, QFont::Bold);
+        lonLat2Point(30, 9, &countries_positions[0]);
+           /*glBegin(GL_LINES);
+               glColor4f(1,0,0,1.0f);
+               glVertex3f (countries_positions[i].x  ,  countries_positions[i].y  ,  countries_positions[i].z);
+               glVertex3f (countries_positions2[i].x  ,  countries_positions2[i].y  ,  countries_positions2[i].z);
+           glEnd();*/
+           glColor4f(1.0, 1.0, 1.0, 1.0);
+           //renderText(countries_positions[0].x  ,  countries_positions[0].y  ,  countries_positions[0].z, QString("Tunisia"), myFont );
+        
         //glEnable(GL_DEPTH_TEST);
     glEndList();             
 
@@ -304,6 +316,18 @@ unsigned int GLWidget::loadTextureBmp(const char* fileName)
     return texture;
 }
 
+void GLWidget::lonLat2Point(float lon, float lat, Vector *pos)
+{
+    // lat -90..90 => Y
+    // lon -180..180 => X
+    float    angX, angY;
+    angX = (180.f+lat) * PI / 180.f;
+    angY = lon * PI / 180.f;
+    qDebug() << angY << sinf(angY);
+    pos->x = fabsf(cosf(angY)) * 1 * sinf(angX);
+    //pos->y = 1 * sinf(angY);
+    /*pos->z = fabsf(cosf(angY)) * 1 * cosf(angX);*/
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -351,7 +375,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     }
     else if (event->buttons() & Qt::RightButton) {
         float addition;
-        addition = ((deltX+deltY) / 200);
+        addition = ((deltX+deltY) / 100);
 
         //if (addition < 0 && scaleAll+addition > MIN_SCALE) {
             //scaleAll += addition;

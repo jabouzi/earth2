@@ -11,6 +11,12 @@
 
 #include <QGLWidget>
 #include "Bmp.h"
+#include <math.h>
+
+#define PI 3.14159265
+struct Vector {
+    float x, y, z;
+};
 
 class GLWidget : public QGLWidget {
     Q_OBJECT
@@ -71,6 +77,7 @@ private:
     QPointF pixelPosToViewPos(const QPointF&);
     float rotX, rotY, autoRotX, autoRotY, scaleAll;
     float angleX, angleY;
+    void lonLat2Point(float , float , Vector *);
 };
 
 #endif // GLWIDGET_H
